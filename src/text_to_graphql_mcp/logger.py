@@ -12,8 +12,13 @@ import json
 # Remove default logger
 loguru_logger.remove()
 
-# Setup logs directory
-os.makedirs("logs", exist_ok=True)
+# Setup logs directory - handle read-only file systems gracefully
+try:
+    os.makedirs("logs", exist_ok=True)
+    LOGS_AVAILABLE = True
+except (OSError, PermissionError):
+    # Running in read-only environment (like MCP), skip file logging
+    LOGS_AVAILABLE = False
 
 def pretty_json(value):
     """Format JSON nicely for logs with proper indentation and colors."""
@@ -46,17 +51,18 @@ def setup_logger(name="app", log_level="INFO"):
         enqueue=True,  # Thread-safe logging
     )
     
-    # File handler with rotation
-    loguru_logger.add(
-        log_file,
-        level=log_level,
-        format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name} | {function}:{line} | {message}",
-        filter=lambda record: record["extra"].get("name", "") == name or not record["extra"].get("name"),
-        rotation="10 MB",
-        compression="zip",
-        retention="1 week",
-        enqueue=True,  # Thread-safe logging
-    )
+    # File handler with rotation (only if logs directory is available)
+    if LOGS_AVAILABLE:
+        loguru_logger.add(
+            log_file,
+            level=log_level,
+            format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name} | {function}:{line} | {message}",
+            filter=lambda record: record["extra"].get("name", "") == name or not record["extra"].get("name"),
+            rotation="10 MB",
+            compression="zip",
+            retention="1 week",
+            enqueue=True,  # Thread-safe logging
+        )
     
     # Create a contextualized logger
     contextualized_logger = loguru_logger.bind(name=name)
