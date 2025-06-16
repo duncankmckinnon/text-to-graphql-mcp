@@ -4,9 +4,107 @@ FastMCP Server for Text-to-GraphQL MCP Server.
 Exposes GraphQL agent functionality as MCP tools for LLM clients using FastMCP.
 """
 
+import os
+import sys
+
+# CRITICAL: Disable Rich colors BEFORE any other imports
+# This must be the first thing we do to prevent FastMCP from initializing Rich with colors
+def is_mcp_mode():
+    """Detect if we're running as an MCP server."""
+    return (
+        not sys.stdin.isatty() or 
+        os.environ.get('MCP_MODE', '').lower() == 'true' or
+        os.environ.get('RUNNING_AS_MCP_SERVER', '').lower() == 'true'
+    )
+
+# Apply patches immediately if in MCP mode
+if is_mcp_mode():
+    # Set environment variables to disable colors globally
+    os.environ['NO_COLOR'] = '1'
+    os.environ['FORCE_COLOR'] = '0'
+    os.environ['TERM'] = 'dumb'
+    os.environ['COLORTERM'] = ''
+    os.environ['ANSI_COLORS_DISABLED'] = '1'
+    
+    # Patch Rich at the module level before it's imported
+    import sys
+    from unittest.mock import patch
+    
+    # Create a mock for Rich Console that never uses colors
+    class MockRichConsole:
+        def __init__(self, *args, **kwargs):
+            self.is_terminal = False
+            self._color_system = None
+            self.file = sys.stderr  # Add file attribute for Rich logging
+            self.legacy_windows = False
+            self.width = 80
+            self.height = 24
+            self.options = None
+            
+        def _detect_color_system(self):
+            return None
+            
+        def print(self, *args, **kwargs):
+            # Redirect to stderr with no colors
+            print(*args, file=sys.stderr, **{k: v for k, v in kwargs.items() if k != 'style'})
+            
+        def log(self, *args, **kwargs):
+            # Redirect to stderr with no colors
+            print(*args, file=sys.stderr, **{k: v for k, v in kwargs.items() if k != 'style'})
+    
+    # Monkey patch Rich imports
+    # Handle __builtins__ being either a module or dict
+    if isinstance(__builtins__, dict):
+        original_import = __builtins__['__import__']
+    else:
+        original_import = __builtins__.__import__
+    
+    def patched_import(name, *args, **kwargs):
+        module = original_import(name, *args, **kwargs)
+        
+        # Patch Rich console when it's imported
+        if name == 'rich.console' or name.startswith('rich.console'):
+            if hasattr(module, 'Console'):
+                # Replace Console class with our mock
+                original_console = module.Console
+                module.Console = MockRichConsole
+                
+                # Patch existing instances
+                if hasattr(module, 'console'):
+                    module.console = MockRichConsole()
+                if hasattr(module, '_console'):
+                    module._console = MockRichConsole()
+                    
+        elif name == 'rich' and hasattr(module, 'console'):
+            # Patch the rich.console module
+            module.console.Console = MockRichConsole
+            if hasattr(module.console, 'console'):
+                module.console.console = MockRichConsole()
+        
+        return module
+    
+    # Set the patched import function
+    if isinstance(__builtins__, dict):
+        __builtins__['__import__'] = patched_import
+    else:
+        __builtins__.__import__ = patched_import
+    
+    # Additional print redirection
+    original_print = print
+    def patched_print(*args, **kwargs):
+        if 'file' not in kwargs:
+            kwargs['file'] = sys.stderr
+        # Strip any color-related kwargs
+        kwargs = {k: v for k, v in kwargs.items() if k not in ['style', 'color']}
+        return original_print(*args, **kwargs)
+    
+    # Monkey patch print globally
+    import builtins
+    builtins.print = patched_print
+
+# Now safe to import other modules
 import asyncio
 import json
-import os
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
@@ -234,8 +332,12 @@ async def get_query_examples() -> str:
 
 
 def main():
-    """Main entry point for the MCP server."""
-    logger.info("=== Text-to-GraphQL MCP Server Starting ===")
+    """Main entry point for the MCP server.""" 
+    if is_mcp_mode():
+        logger.info("=== Text-to-GraphQL MCP Server Starting (MCP Mode - Colors Disabled) ===")
+    else:
+        logger.info("=== Text-to-GraphQL MCP Server Starting ===")
+    
     mcp.run()
 
 
