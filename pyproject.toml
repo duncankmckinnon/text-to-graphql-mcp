@@ -4,15 +4,16 @@ build-backend = "hatchling.build"
 
 [project]
 name = "text-to-graphql-mcp"
-version = "0.1.0"
+version = "0.1.2"
 description = "Transform natural language queries into GraphQL queries using an MCP server"
 readme = "README.md"
-license = { text = "ELv2" }
+license = "LicenseRef-Elastic-2.0"
 authors = [
-    { name = "Anthony Abercrombie", email = "anthony@example.com" }
+    { name = "Anthony Abercrombie", email = "aabercrombie@arize.com" }
 ]
 maintainers = [
-    { name = "Anthony Abercrombie", email = "anthony@example.com" }
+    { name = "Anthony Abercrombie", email = "aabercrombie@arize.com" },
+    { name = "John Gilhuly", email = "john@arize.com" }
 ]
 keywords = [
     "graphql",
@@ -27,8 +28,6 @@ classifiers = [
     "Intended Audience :: Developers",
 
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
@@ -87,10 +86,9 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/text-to-graphql-mcp"
-Repository = "https://github.com/yourusername/text-to-graphql-mcp"
-Documentation = "https://github.com/yourusername/text-to-graphql-mcp#readme"
-"Bug Tracker" = "https://github.com/yourusername/text-to-graphql-mcp/issues"
+Homepage = "https://github.com/Arize-ai/text-to-graphql-mcp/"
+Repository = "https://github.com/Arize-ai/text-to-graphql-mcp/"
+Documentation = "https://github.com/Arize-ai/text-to-graphql-mcp#readme"
 
 [project.scripts]
 text-to-graphql-mcp = "text_to_graphql_mcp.mcp_server:main"
@@ -144,7 +142,7 @@ asyncio_mode = "auto"
 
 # mypy configuration
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

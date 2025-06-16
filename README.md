@@ -2,9 +2,13 @@
 
 Transform natural language queries into GraphQL queries using an MCP (Model Context Protocol) server that integrates seamlessly with AI assistants like Claude Desktop and Cursor.
 
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=text-to-graphql&config=eyJjb21tYW5kIjoidXYgLS1kaXJlY3RvcnkgL3BhdGgvdG8vdGV4dC10by1ncmFwaHFsLW1jcCBydW4gdGV4dC10by1ncmFwaHFsLW1jcCIsImVudiI6eyJQQVRIIjoiL3BhdGgvdG8vdXYvYmluOi91c3IvYmluOi9iaW4iLCJPUEVOQUlfQVBJX0tFWSI6InlvdXJfb3BlbmFpX2FwaV9rZXlfaGVyZSIsIkdSQVBIUUxfRU5EUE9JTlQiOiJodHRwczovL3lvdXItZ3JhcGhxbC1hcGkuY29tL2dyYXBocWwiLCJHUkFQSFFMX0FQSV9LRVkiOiJ5b3VyX2FwaV9rZXlfaGVyZSIsIkdSQVBIUUxfQVVUSF9UWVBFIjoiYmVhcmVyIn19)
+
+![Claude Demo](static/text_to_graphql_claude_demo.gif)
+
 ## 🚀 Overview
 
-The Text-to-GraphQL MCP Server converts natural language descriptions into valid GraphQL queries using advanced AI agents built with LangGraph. It provides a bridge between human language and GraphQL APIs, making database and API interactions more intuitive for developers and non-technical users alike.
+The Text-to-GraphQL MCP Server converts natural language descriptions into valid GraphQL queries using an AI agent built with LangGraph. It provides a bridge between human language and GraphQL APIs, making database and API interactions more intuitive for developers and non-technical users alike.
 
 ## ✨ Features
 
@@ -33,9 +37,25 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
+**Find your UV installation path:**
+```bash
+# Find where uv is installed
+which uv
+
+# Common locations:
+# macOS/Linux: ~/.local/bin/uv
+# Windows: %APPDATA%\uv\bin\uv.exe
+```
+
+> **Important**: You'll need the UV path for MCP configuration. The typical path is `~/.local/bin` on macOS/Linux, which translates to `/Users/yourusername/.local/bin` (replace `yourusername` with your actual username).
+
 ### Setup for MCP Usage
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/text-to-graphql-mcp.git
+cd text-to-graphql-mcp
+
 # Install dependencies (UV automatically creates virtual environment)
 uv sync
 
@@ -75,6 +95,7 @@ Add to your `.cursor/mcp.json`:
       "text-to-graphql-mcp"
     ],
     "env": {
+      "PATH": "/path/to/uv/bin:/usr/bin:/bin",
       "OPENAI_API_KEY": "your_openai_api_key_here",
       "GRAPHQL_ENDPOINT": "https://your-graphql-api.com/graphql",
       "GRAPHQL_API_KEY": "your_api_key_here",
@@ -84,11 +105,17 @@ Add to your `.cursor/mcp.json`:
 }
 ```
 
-> Replace `/path/to/text-to-graphql-mcp` with the actual path to your cloned repository.
+> **Important Setup Notes:**
+> - Replace `/path/to/text-to-graphql-mcp` with the actual path to your cloned repository
+> - Replace `/path/to/uv/bin` with your actual UV installation path (typically `/Users/yourusername/.local/bin` on macOS)
+> - The `PATH` environment variable is **required** for MCP clients to find the `uv` command
 
 ### 2. Configure with Claude Desktop
 
-Add to your Claude Desktop MCP configuration:
+Add to your Claude Desktop MCP configuration file:
+
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -102,6 +129,7 @@ Add to your Claude Desktop MCP configuration:
         "text-to-graphql-mcp"
       ],
       "env": {
+        "PATH": "/path/to/uv/bin:/usr/bin:/bin",
         "OPENAI_API_KEY": "your_openai_api_key_here",
         "GRAPHQL_ENDPOINT": "https://your-graphql-api.com/graphql",
         "GRAPHQL_API_KEY": "your_api_key_here",
@@ -112,7 +140,30 @@ Add to your Claude Desktop MCP configuration:
 }
 ```
 
-### 3. Alternative: Use Environment Variables
+> **Setup Instructions:**
+> 1. **Find your UV path**: Run `which uv` in terminal (typically `/Users/yourusername/.local/bin/uv`)
+> 2. **Set the PATH**: Use the directory containing `uv` (e.g., `/Users/yourusername/.local/bin`)
+> 3. **Replace paths**: Update both the `--directory` argument and `PATH` environment variable with your actual paths
+> 4. **Add your API keys**: Replace the placeholder values with your actual API keys
+
+### 3. Common UV Path Examples
+
+```bash
+# Find your UV installation
+which uv
+
+# Common paths by OS:
+# macOS: /Users/yourusername/.local/bin/uv
+# Linux: /home/yourusername/.local/bin/uv  
+# Windows: C:\Users\yourusername\AppData\Roaming\uv\bin\uv.exe
+
+# For MCP config, use the directory path:
+# macOS: /Users/yourusername/.local/bin
+# Linux: /home/yourusername/.local/bin
+# Windows: C:\Users\yourusername\AppData\Roaming\uv\bin
+```
+
+### 4. Alternative: Use Environment Variables
 
 If you prefer using a `.env` file (useful for local development):
 
@@ -130,7 +181,7 @@ MODEL_NAME=gpt-4o
 MODEL_TEMPERATURE=0
 ```
 
-Then use a simplified MCP configuration:
+Then use a simplified MCP configuration (still requires PATH):
 
 ```json
 {
@@ -141,12 +192,15 @@ Then use a simplified MCP configuration:
       "/path/to/text-to-graphql-mcp",
       "run",
       "text-to-graphql-mcp"
-    ]
+    ],
+    "env": {
+      "PATH": "/path/to/uv/bin:/usr/bin:/bin"
+    }
   }
 }
 ```
 
-### 4. Run the MCP Server (Optional - for testing)
+### 5. Run the MCP Server (Optional - for testing)
 
 ```bash
 # Run the server directly for testing
