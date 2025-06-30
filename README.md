@@ -53,7 +53,7 @@ which uv
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/text-to-graphql-mcp.git
+git clone https://github.com/Arize-ai/text-to-graphql-mcp.git
 cd text-to-graphql-mcp
 
 # Install dependencies (UV automatically creates virtual environment)
@@ -424,7 +424,7 @@ This project is licensed under the Elastic License 2.0 (ELv2) - see the [LICENSE
 
 ## 🔗 Links
 
-- [Issues & Bug Reports](https://github.com/yourusername/text-to-graphql-mcp/issues)
+- [Issues & Bug Reports](https://github.com/Arize-ai/text-to-graphql-mcp/issues)
 - [MCP Protocol Documentation](https://spec.modelcontextprotocol.io/)
 
 ## 🙏 Acknowledgments
