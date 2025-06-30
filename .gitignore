@@ -11,6 +11,7 @@ node_modules/
 
 # Environment variables
 .env
+.venv/
 
 # Editor directories and files
 .idea
@@ -49,3 +50,6 @@ wheels/
 # Task files
 tasks.json
 tasks/ 
+
+# uv lock files
+uv.lock
