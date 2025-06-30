@@ -50,3 +50,6 @@ wheels/
 # Task files
 tasks.json
 tasks/
+
+# uv lock files
+uv.lock
