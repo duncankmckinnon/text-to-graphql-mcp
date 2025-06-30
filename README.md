@@ -95,6 +95,7 @@ Add to your `.cursor/mcp.json`:
       "text-to-graphql-mcp"
     ],
     "env": {
+      "PATH": "/path/to/uv/bin:/usr/bin:/bin",
       "OPENAI_API_KEY": "your_openai_api_key_here",
       "GRAPHQL_ENDPOINT": "https://your-graphql-api.com/graphql",
       "GRAPHQL_API_KEY": "your_api_key_here",
@@ -107,6 +108,7 @@ Add to your `.cursor/mcp.json`:
 > **Important Setup Notes:**
 > - Replace `/path/to/text-to-graphql-mcp` with the actual path to your cloned repository
 > - Replace `/path/to/uv/bin` with your actual UV installation path (typically `/Users/yourusername/.local/bin` on macOS)
+> - The `PATH` environment variable is **required** for MCP clients to find the `uv` command
 
 ### 2. Configure with Claude Desktop
 
@@ -127,6 +129,7 @@ Add to your Claude Desktop MCP configuration file:
         "text-to-graphql-mcp"
       ],
       "env": {
+        "PATH": "/path/to/uv/bin:/usr/bin:/bin",
         "OPENAI_API_KEY": "your_openai_api_key_here",
         "GRAPHQL_ENDPOINT": "https://your-graphql-api.com/graphql",
         "GRAPHQL_API_KEY": "your_api_key_here",
@@ -189,7 +192,10 @@ Then use a simplified MCP configuration (still requires PATH):
       "/path/to/text-to-graphql-mcp",
       "run",
       "text-to-graphql-mcp"
-    ]
+    ],
+    "env": {
+      "PATH": "/path/to/uv/bin:/usr/bin:/bin"
+    }
   }
 }
 ```
