@@ -264,6 +264,165 @@ query {
 }
 ```
 
+## 🐳 Deploying with Docker
+
+> **💡 Key Concept**: When using Docker with MCP clients (Claude/Cursor), environment variables are set during container startup (`docker run`), not in the MCP client configuration. The MCP clients simply connect to the already-running container.
+
+### Building the Docker Image
+
+```bash
+# Clone the repository
+git clone https://github.com/Arize-ai/text-to-graphql-mcp.git
+cd text-to-graphql-mcp
+
+# Build the Docker image
+docker build -t text-to-graphql-mcp .
+```
+
+### Running the Container
+
+#### Method 1: Using Environment Variables Directly
+
+```bash
+docker run -d \
+  --name text-to-graphql-mcp \
+  -p 8000:8000 \
+  -e OPENAI_API_KEY="your_openai_api_key_here" \
+  -e GRAPHQL_ENDPOINT="https://your-graphql-api.com/graphql" \
+  -e GRAPHQL_API_KEY="your_api_key_here" \
+  -e GRAPHQL_AUTH_TYPE="bearer" \
+  -e MODEL_NAME="gpt-4o" \
+  text-to-graphql-mcp
+```
+
+#### Method 2: Using an Environment File
+
+Create a `.env` file:
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+GRAPHQL_ENDPOINT=https://your-graphql-api.com/graphql
+GRAPHQL_API_KEY=your_api_key_here
+GRAPHQL_AUTH_TYPE=bearer
+MODEL_NAME=gpt-4o
+MODEL_TEMPERATURE=0
+```
+
+Run the container:
+```bash
+docker run -d \
+  --name text-to-graphql-mcp \
+  -p 8000:8000 \
+  --env-file .env \
+  text-to-graphql-mcp
+```
+
+#### Method 3: Using Docker Compose
+
+Create a `docker-compose.yml` file:
+```yaml
+version: '3.8'
+
+services:
+  text-to-graphql-mcp:
+    build: .
+    container_name: text-to-graphql-mcp
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GRAPHQL_ENDPOINT=${GRAPHQL_ENDPOINT}
+      - GRAPHQL_API_KEY=${GRAPHQL_API_KEY}
+      - GRAPHQL_AUTH_TYPE=${GRAPHQL_AUTH_TYPE:-bearer}
+      - MODEL_NAME=${MODEL_NAME:-gpt-4o}
+      - MODEL_TEMPERATURE=${MODEL_TEMPERATURE:-0}
+      - API_HOST=0.0.0.0  # Important: bind to all interfaces in container
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+Then run:
+```bash
+# Start the service
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the service
+docker-compose down
+```
+
+### Using Docker with MCP Clients
+
+When running the MCP server in Docker, you need to use `docker exec` to communicate with the container:
+
+**Important**: The environment variables (OPENAI_API_KEY, GRAPHQL_ENDPOINT, etc.) must be set when you **first run the container** using one of the methods above. The MCP client configurations below only connect to an already-running container.
+
+#### Step 1: First, ensure your container is running with environment variables
+
+```bash
+# Example: Make sure the container is running with your environment variables
+docker run -d \
+  --name text-to-graphql-mcp \
+  -p 8000:8000 \
+  --env-file .env \
+  text-to-graphql-mcp
+
+# Verify the container is running
+docker ps | grep text-to-graphql-mcp
+```
+
+#### Step 2: Configure Cursor
+
+Add to `.cursor/mcp.json`:
+```json
+{
+  "text-to-graphql": {
+    "command": "docker",
+    "args": [
+      "exec",
+      "-i",
+      "text-to-graphql-mcp",
+      "uv",
+      "run",
+      "python",
+      "-m",
+      "src.text_to_graphql_mcp.mcp_server"
+    ]
+  }
+}
+```
+
+#### Step 2: Configure Claude Desktop
+
+Add to your Claude Desktop configuration:
+```json
+{
+  "mcpServers": {
+    "text-to-graphql": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "text-to-graphql-mcp",
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "src.text_to_graphql_mcp.mcp_server"
+      ]
+    }
+  }
+}
+```
+
+**Note**: The MCP client configurations don't need environment variables because they're connecting to a container that already has them set. If you restart the container, make sure to include the environment variables again.
+
+
 ## 🏗 Architecture
 
 The system uses a multi-agent architecture built with LangGraph:
