@@ -11,7 +11,7 @@ import re
 
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
-from langchain.prompts import PromptTemplate, ChatPromptTemplate
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.language_models import BaseChatModel
