@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional, List
 from collections import Counter
 from ..types import AgentState  
 from ..logger import logger
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 
 def get_data_visualization_prompt() -> ChatPromptTemplate:
     """
